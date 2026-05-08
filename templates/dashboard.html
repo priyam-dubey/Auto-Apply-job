@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Auto-Apply Architect</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2e3147;
+      --accent: #6c63ff;
+      --accent2: #43e97b;
+      --danger: #ff6b6b;
+      --text: #e8eaf6;
+      --muted: #8b8fa8;
+      --radius: 12px;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    /* ── Layout ───────────────────────────────────── */
+    .container { max-width: 960px; margin: 0 auto; }
+    h1 { font-size: 2rem; font-weight: 700; margin-bottom: 4px; }
+    h1 span { color: var(--accent); }
+    .subtitle { color: var(--muted); margin-bottom: 32px; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media(max-width: 680px) { .grid { grid-template-columns: 1fr; } }
+
+    /* ── Card ─────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .card h2 { font-size: 1.1rem; margin-bottom: 16px; color: var(--accent); }
+
+    /* ── Form Elements ────────────────────────────── */
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: 6px; }
+    input[type="text"],
+    input[type="number"],
+    input[type="file"],
+    select,
+    textarea {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 10px 14px;
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 80px; }
+    input[type="file"] { padding: 8px; cursor: pointer; }
+
+    /* ── Checkbox group ───────────────────────────── */
+    .checkbox-row { display: flex; flex-wrap: wrap; gap: 12px; }
+    .checkbox-row label {
+      display: flex; align-items: center; gap: 6px;
+      color: var(--text); font-size: .95rem;
+      cursor: pointer;
+    }
+    .checkbox-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); }
+
+    /* ── Buttons ──────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: 8px; border: none;
+      font-size: .95rem; font-weight: 600; cursor: pointer;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { opacity: .9; }
+    .btn-danger  { background: var(--danger); color: #fff; }
+
+    /* ── Status / Log ─────────────────────────────── */
+    #status-section { margin-top: 28px; display: none; }
+    .status-badge {
+      display: inline-block; padding: 4px 12px; border-radius: 20px;
+      font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em;
+    }
+    .badge-queued   { background: #2d3748; color: #a0aec0; }
+    .badge-running  { background: #2c3e6b; color: #63b3ed; }
+    .badge-done     { background: #1d4a3b; color: #48bb78; }
+    .badge-error    { background: #4a1d1d; color: #fc8181; }
+
+    .log-box {
+      background: #0a0c14; border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px; margin-top: 12px;
+      max-height: 260px; overflow-y: auto;
+      font-family: 'Consolas', monospace; font-size: .82rem;
+      color: #a0e4a8; line-height: 1.7;
+    }
+
+    /* ── Applications Table ───────────────────────── */
+    #apps-section { margin-top: 40px; }
+    #apps-section h2 { margin-bottom: 16px; font-size: 1.2rem; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      text-align: left; padding: 10px 12px;
+      font-size: .8rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .05em;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr:hover { background: rgba(108,99,255,.06); }
+    td { padding: 10px 12px; font-size: .9rem; border-bottom: 1px solid #1e2030; }
+    .platform-badge {
+      padding: 2px 8px; border-radius: 4px; font-size: .75rem; font-weight: 700;
+      text-transform: uppercase;
+    }
+    .p-linkedin    { background: #0a66c2; color: #fff; }
+    .p-internshala { background: #009688; color: #fff; }
+    .p-unstop      { background: #ff6b35; color: #fff; }
+
+    /* ── Cookie hint ──────────────────────────────── */
+    details summary {
+      cursor: pointer; color: var(--accent); font-size: .85rem; margin-bottom: 8px;
+    }
+    .hint { font-size: .78rem; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Auto-Apply <span>Architect</span></h1>
+  <p class="subtitle">Fill in your profile once — apply to hundreds of jobs automatically.</p>
+
+  <!-- ══ Main Form ══════════════════════════════════ -->
+  <form id="apply-form" enctype="multipart/form-data">
+    <div class="grid">
+
+      <!-- Left: Personal Info -->
+      <div class="card">
+        <h2>👤 Profile</h2>
+
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" name="name" placeholder="Priyambad Kumar" />
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="text" name="phone" placeholder="+91 9876543210" />
+        </div>
+        <div class="form-group">
+          <label>Preferred Role *</label>
+          <input type="text" name="role" required placeholder="Frontend Developer Intern" />
+        </div>
+        <div class="form-group">
+          <label>Skills (comma-separated)</label>
+          <input type="text" name="skills" placeholder="React, JavaScript, CSS3, Git" />
+        </div>
+        <div class="form-group">
+          <label>Education</label>
+          <input type="text" name="education" placeholder="B.Tech CSE — XYZ University" />
+        </div>
+        <div class="form-group">
+          <label>Years of Experience</label>
+          <input type="number" name="experience" value="0" min="0" max="30" />
+        </div>
+        <div class="form-group">
+          <label>LinkedIn Profile URL</label>
+          <input type="text" name="linkedin_url" placeholder="https://linkedin.com/in/your-name" />
+        </div>
+        <div class="form-group">
+          <label>Portfolio / GitHub URL</label>
+          <input type="text" name="portfolio_url" placeholder="https://github.com/your-name" />
+        </div>
+      </div>
+
+      <!-- Right: Job Preferences -->
+      <div class="card">
+        <h2>🎯 Job Preferences</h2>
+
+        <div class="form-group">
+          <label>Preferred Location</label>
+          <input type="text" name="location" placeholder="Bangalore, Remote" />
+        </div>
+        <div class="form-group">
+          <label>Expected Salary / Stipend</label>
+          <input type="text" name="salary" placeholder="₹20,000/month or 5 LPA" />
+        </div>
+        <div class="form-group">
+          <label>Upload Resume (PDF) *</label>
+          <input type="file" name="resume" accept=".pdf" required />
+        </div>
+
+        <div class="form-group">
+          <label>Platforms to Apply On *</label>
+          <div class="checkbox-row">
+            <label><input type="checkbox" name="platforms" value="linkedin" /> LinkedIn</label>
+            <label><input type="checkbox" name="platforms" value="internshala" /> Internshala</label>
+            <label><input type="checkbox" name="platforms" value="unstop" /> Unstop</label>
+          </div>
+        </div>
+
+        <!-- Cookie Auth -->
+        <details>
+          <summary>🍪 Session Cookies (optional but recommended)</summary>
+          <div class="hint">
+            Paste your browser cookies so the bot can log in without showing a browser window.
+            Use a browser extension like "Cookie-Editor" → Export as JSON.
+          </div>
+          <div class="form-group" style="margin-top:10px">
+            <label>LinkedIn Cookies (JSON)</label>
+            <textarea name="linkedin_cookies" rows="3" placeholder='[{"name":"li_at","value":"..."}]'></textarea>
+          </div>
+          <div class="form-group">
+            <label>Internshala Cookies (JSON)</label>
+            <textarea name="internshala_cookies" rows="3" placeholder='[{"name":"_session_id","value":"..."}]'></textarea>
+          </div>
+        </details>
+
+        <div style="margin-top:20px">
+          <button type="submit" class="btn btn-primary" id="submit-btn">
+            🚀 Start Auto-Apply
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- ══ Status Section ════════════════════════════ -->
+  <div id="status-section" class="card" style="margin-top:20px">
+    <h2>⚡ Job Status: <span id="status-badge" class="status-badge badge-queued">Queued</span></h2>
+    <div class="log-box" id="log-box">Waiting for logs…</div>
+  </div>
+
+  <!-- ══ Applications Table ════════════════════════ -->
+  <div id="apps-section">
+    <h2>📋 Application History</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Company</th>
+            <th>Role</th>
+            <th>Platform</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="apps-tbody">
+          <tr><td colspan="6" style="color:var(--muted);text-align:center;padding:20px">No applications yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Helpers ──────────────────────────────────────
+const $ = s => document.querySelector(s);
+
+// ── Load application history on page load ────────
+async function loadApplications() {
+  try {
+    const res = await fetch('/api/applications');
+    const apps = await res.json();
+    const tbody = $('#apps-tbody');
+    if (!apps.length) return;
+    tbody.innerHTML = apps.map((a, i) => `
+      <tr>
+        <td>${a.id}</td>
+        <td>${a.company}</td>
+        <td>${a.role}</td>
+        <td><span class="platform-badge p-${a.platform}">${a.platform}</span></td>
+        <td>${a.applied_at?.slice(0, 10) || ''}</td>
+        <td>${a.status}</td>
+      </tr>
+    `).join('');
+  } catch(e) { /* ignore */ }
+}
+loadApplications();
+
+// ── Form submission ───────────────────────────────
+$('#apply-form').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const platforms = [...document.querySelectorAll('input[name="platforms"]:checked')];
+  if (!platforms.length) {
+    alert('Please select at least one platform.');
+    return;
+  }
+
+  const btn = $('#submit-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Launching…';
+
+  const formData = new FormData(e.target);
+
+  try {
+    const res = await fetch('/api/submit', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.error) { alert(data.error); btn.disabled = false; btn.textContent = '🚀 Start Auto-Apply'; return; }
+
+    $('#status-section').style.display = 'block';
+    pollJob(data.job_id);
+  } catch(err) {
+    alert('Network error: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = '🚀 Start Auto-Apply';
+  }
+});
+
+// ── Polling ───────────────────────────────────────
+function pollJob(jobId) {
+  const badge = $('#status-badge');
+  const logBox = $('#log-box');
+
+  const interval = setInterval(async () => {
+    try {
+      const res = await fetch(`/api/job/${jobId}`);
+      const data = await res.json();
+
+      // Update badge
+      badge.className = `status-badge badge-${data.status}`;
+      badge.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+
+      // Update log
+      if (data.log?.length) {
+        logBox.innerHTML = data.log.join('\n');
+        logBox.scrollTop = logBox.scrollHeight;
+      }
+
+      if (data.status === 'done' || data.status === 'error') {
+        clearInterval(interval);
+        $('#submit-btn').disabled = false;
+        $('#submit-btn').textContent = '🚀 Start Auto-Apply';
+        loadApplications();
+      }
+    } catch (e) { /* ignore transient errors */ }
+  }, 2000);
+}
+</script>
+</body>
+</html>

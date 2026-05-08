@@ -1,0 +1,20 @@
+# ── Web Framework ─────────────────────────────────
+Flask==3.1.1
+Werkzeug==3.1.3
+
+# ── Browser Automation ────────────────────────────
+playwright==1.44.0
+playwright-stealth==1.0.6
+
+# ── PDF Parsing ───────────────────────────────────
+pypdf==4.2.0
+pdfminer.six==20231228
+
+# ── Security ──────────────────────────────────────
+cryptography==42.0.8
+
+# ── AI-assisted resume parsing (optional) ─────────
+# openai==1.30.1   # uncomment if you have an OpenAI API key
+
+# ── Utilities ─────────────────────────────────────
+python-dotenv==1.0.1

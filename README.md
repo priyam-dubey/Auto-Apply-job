@@ -9,7 +9,7 @@ A production-ready job application automation tool with:
 - **Background Workers** — threading so the browser runs without blocking the UI
 - **Security** — Fernet-encrypted cookie storage, dotenv secrets
 
----
+--
 
 ## Project Structure is shown below
 

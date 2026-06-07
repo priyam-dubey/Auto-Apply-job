@@ -11,7 +11,7 @@ A production-ready job application automation tool with:
 
 ---
 
-## Project Structure
+## Project Structure is shown below
 
 ```
 auto_apply_tool/
